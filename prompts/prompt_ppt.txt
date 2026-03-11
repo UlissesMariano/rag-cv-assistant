@@ -1,0 +1,59 @@
+Analise todo este projeto de software e gere uma apresentação em PowerPoint (.pptx) explicando o projeto de forma simples e didática.
+
+Objetivo:
+Criar uma apresentação que qualquer pessoa técnica consiga entender rapidamente.
+
+Instruções:
+
+1. Analise a estrutura completa do projeto:
+   - pastas
+   - arquivos principais
+   - bibliotecas utilizadas
+   - fluxo de execução do sistema
+
+2. Identifique:
+   - objetivo do projeto
+   - problema que ele resolve
+   - arquitetura geral
+   - principais componentes
+   - fluxo de dados
+
+3. Crie uma apresentação com os seguintes slides:
+
+Slide 1 – Título
+- Nome do projeto
+- Descrição curta
+- Autor
+
+Slide 2 – Problema
+- Qual problema o sistema resolve
+- Contexto
+
+Slide 3 – Solução
+- Ideia geral da solução
+
+Slide 4 – Arquitetura
+- Componentes principais do sistema
+- Backend, frontend, APIs, banco de dados, LLMs etc.
+
+Slide 5 – Fluxo do sistema
+- Passo a passo de como o sistema funciona
+
+Slide 6 – Tecnologias usadas
+- Linguagens
+- Frameworks
+- Ferramentas
+
+Slide 7 – Estrutura do projeto
+- Explicação das pastas principais
+
+Slide 8 – Exemplo de uso
+- Como um usuário interage com o sistema
+
+Slide 9 – Possíveis melhorias
+- Sugestões de evolução
+
+Slide 10 – Conclusão
+- Resumo do projeto
+
+4. Gere também o código Python utilizando a biblioteca python-pptx para criar automaticamente o arquivo "project_explanation.pptx".
