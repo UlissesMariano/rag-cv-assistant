@@ -36,3 +36,6 @@ streamlit==1.55.0
 # Outras Dependências
 python-dotenv==1.0.1
 
+# Notebook e Debugging
+ipykernel
+nbformat

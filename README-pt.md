@@ -85,6 +85,28 @@ streamlit run 04_web_app.py
 
 ---
 
+## ⚡ Execução Rápida (Para quem já conhece o projeto)
+
+Use estes comandos em terminais separados para rodar o projeto rapidamente:
+
+**Terminal 1: Docker e API**
+```bash
+docker start vector_db
+python 03_start_api.py
+```
+
+**Terminal 2: Streamlit (Front-end)**
+```bash
+streamlit run 04_web_app.py
+```
+
+**Terminal 3: Cloudflared (Expor a aplicação)**
+```bash
+cloudflared tunnel --url http://127.0.0.1:8501
+```
+
+---
+
 ## 💡 Exemplos de Perguntas
 -   "Quais são as principais experiências acadêmicas do Ulisses?"
 -   "O Ulisses tem experiência com Python e IA?"

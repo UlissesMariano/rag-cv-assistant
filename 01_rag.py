@@ -101,7 +101,8 @@ def carrega_texto_pptx(arquivoname):
 def main_indexing(mypath):
     
     # Define o nome do modelo a ser usado para criar as embeddings
-    model_name = "sentence-transformers/msmarco-bert-base-dot-v5"
+    # model_name = "sentence-transformers/msmarco-bert-base-dot-v5"
+    model_name = 'BAAI/bge-m3'
     
     # Define as configurações do modelo
     model_kwargs = {'device': 'cpu'}
@@ -127,7 +128,10 @@ def main_indexing(mypath):
 
     # Cria uma nova coleção com parâmetros especificados
     client.create_collection(collection_name, 
-                             vectors_config = VectorParams(size = 768, distance = Distance.DOT))
+                             vectors_config = VectorParams(
+                                                            # size = 768
+                                                            size = 1024 
+                                                           , distance = Distance.COSINE))
 
     # Inicializa a instância Qdrant
     qdrant = Qdrant(client, collection_name, hf)

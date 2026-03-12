@@ -50,7 +50,7 @@ pip install -r requirements.txt
 ### 3. Database (Qdrant)
 Start the Qdrant container using Docker:
 ```bash
-docker run -p 6333:6333 -p 6334:6334 -v $(pwd)/qdrant_storage:/qdrant/storage:z qdrant/qdrant
+docker run --name vectordb -dit -p 6333:6333 qdrant/qdrant
 ```
 
 ### 4. Environment Variables
@@ -81,6 +81,28 @@ python 03_start_api.py
 In another terminal, run the Streamlit interface:
 ```bash
 streamlit run 04_web_app.py
+```
+
+---
+
+## ⚡ Quick Start / Run Commands
+
+Use these commands in separate terminals to run the project quickly:
+
+**Terminal 1: Docker & API**
+```bash
+docker start vector_db
+python 03_start_api.py
+```
+
+**Terminal 2: Streamlit (Front-end)**
+```bash
+streamlit run 04_web_app.py
+```
+
+**Terminal 3: Cloudflared (Expose the application)**
+```bash
+cloudflared tunnel --url http://127.0.0.1:8501
 ```
 
 ---

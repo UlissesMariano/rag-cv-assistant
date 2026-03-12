@@ -1,97 +1,148 @@
 # IA Generativa, RAG com Qdrant e API
 # Módulo da Interface Web e Consulta à API
 
-# Importa o módulo re de expressão regular
 import re
-
-# Importa o módulo streamlit com o alias st
 import streamlit as st
-
-# Importa o módulo requests
 import requests
-
-# Importa o módulo json
 import json
-
-# Filtra warnings
 import warnings
 warnings.filterwarnings('ignore')
 
-# Configurando o título da página e outras configurações (favicon)
+# ==============================
+# CONFIGURAÇÃO DA PÁGINA
+# ==============================
+
 st.set_page_config(page_title="CV - Ulisses", page_icon=":100:", layout="centered")
 
-# Define o título do aplicativo Streamlit
-st.title('_:green[CV - Ulisses Cuani]_')
-st.title('_:blue[IA Generativa para aprofundamento no currículo do Ulisses]_')
+# ==============================
+# SIDEBAR (TECNOLOGIAS DO PROJETO)
+# ==============================
 
-# Cria uma caixa de texto para entrada de perguntas
-question = st.text_input("Faça sua pergunta sobre o currículo, sobre experiências profissionais ou acadêmicas de Ulisses:", "")
+with st.sidebar:
 
-# Verifica se o botão "Perguntar" foi clicado
-if st.button("Enviar"):
-    
-    # Exibe a pergunta feita
-    st.write("A pergunta foi: \"", question+"\"")
-    
-    # Define a URL da API
+    st.markdown("### Tecnologias do Projeto")
+    st.markdown("---")
+
+    st.markdown("""
+**RAG (Retrieval-Augmented Generation)**  
+Técnica que combina busca em documentos com IA generativa para produzir respostas mais precisas.
+
+**Qdrant**  
+Banco de dados vetorial utilizado para armazenar embeddings e permitir busca semântica eficiente.
+
+**Docker**  
+Ferramenta de containerização usada para rodar os serviços do projeto de forma isolada e reproduzível.
+
+**Streamlit**  
+Framework Python utilizado para criar rapidamente a interface web interativa do projeto.
+
+**FastAPI**  
+Framework moderno para construção da API que conecta a interface ao sistema de RAG.
+
+**Cloudflare Tunnel**  
+Permite expor a aplicação local de forma segura na internet sem necessidade de abrir portas no roteador.
+""")
+
+    st.markdown("---")
+    st.caption("Projeto de demonstração de IA com RAG")
+
+# ==============================
+# TÍTULO PRINCIPAL
+# ==============================
+
+st.title("CV Interativo — Ulisses Cuani")
+
+st.subheader(
+"Assistente de IA que responde perguntas sobre o currículo de Ulisses utilizando RAG com Qdrant, embeddings e LLM."
+)
+
+# ==============================
+# EXEMPLOS DE PERGUNTAS
+# ==============================
+
+st.markdown("### Exemplos rápidos")
+
+if "input_question" not in st.session_state:
+    st.session_state.input_question = ""
+
+if st.button("Quais são as formações acadêmicas do Ulisses?", use_container_width=True):
+    st.session_state.input_question = "Quais são as formações acadêmicas do Ulisses?"
+
+if st.button("Quantos anos de experiência profissional ele possui?", use_container_width=True):
+    st.session_state.input_question = "Quantos anos de experiência profissional ele possui?"
+
+if st.button("Quais projetos acadêmicos ou profissionais ele já desenvolveu?", use_container_width=True):
+    st.session_state.input_question = "Quais projetos acadêmicos ou profissionais ele já desenvolveu?"
+
+# ==============================
+# FORMULÁRIO (ENTER + BOTÃO)
+# ==============================
+
+with st.form("question_form"):
+
+    question = st.text_input(
+        "Digite uma pergunta sobre o currículo de Ulisses:",
+        key="input_question",
+        placeholder="Exemplo: Quais são as experiências profissionais do Ulisses?"
+    )
+
+    submitted = st.form_submit_button("Enviar")
+
+# ==============================
+# PROCESSAMENTO DA PERGUNTA
+# ==============================
+
+if submitted and st.session_state.input_question:
+
+    question = st.session_state.input_question
+
+    st.write(f'A pergunta foi: "{question}"')
+
     url = "http://127.0.0.1:8000/api"
 
-    # Cria o payload da requisição em formato JSON
     payload = json.dumps({"query": question})
-    
-    # Define os cabeçalhos da requisição
+
     headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
 
-    # Faz a requisição POST à API
     response = requests.request("POST", url, headers=headers, data=payload)
 
-    # Obtém a resposta da API e extrai o texto da resposta à pergunta
     answer = json.loads(response.text)["answer"]
-    
-    # Compila uma expressão regular para encontrar referências a documentos
+
     rege = re.compile("\[Document\ [0-9]+\]|\[[0-9]+\]")
-    
-    # Encontra todas as referências a documentos na resposta
+
     m = rege.findall(answer)
-    
-    # Inicializa uma lista para armazenar os números dos documentos
+
     num = []
-    
-    # Extrai os números dos documentos das referências encontradas
+
     for n in m:
         num = num + [int(s) for s in re.findall(r'\b\d+\b', n)]
 
-    # Exibe a resposta da pergunta usando markdown
     st.markdown(answer)
-    
-    # Obtém os documentos do contexto da resposta
+
     documents = json.loads(response.text)['context']
-    
-    # Inicializa uma lista para armazenar os documentos que serão exibidos
+
     show_docs = []
-    
-    # Adiciona os documentos correspondentes aos números extraídos à lista show_docs
+
     for n in num:
         for doc in documents:
             if int(doc['id']) == n:
                 show_docs.append(doc)
-                
-    # Inicializa uma variável para o identificador dos botões de download
+
     id = 12991345567899999
-    
-    # Exibe os documentos expandidos com botões de download
+
     for doc in show_docs:
-        
-        # Cria um expansor para cada documento
+
         with st.expander(str(doc['id'])+" - "+doc['path']):
-            
-            # Exibe o conteúdo do documento
+
             st.write(doc['content'])
-            
-            # Abre o arquivo do documento e cria um botão de download
+
             with open(doc['path'], 'rb') as f:
-                
-                st.download_button("Download do Arquivo", f, file_name = doc['path'].split('/')[-1], key = id)
-                
-                # Incrementa o identificador do botão para download
+
+                st.download_button(
+                    "Download do Arquivo",
+                    f,
+                    file_name = doc['path'].split('/')[-1],
+                    key = id
+                )
+
                 id = id + 1
