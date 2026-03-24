@@ -53,7 +53,7 @@ Permite expor a aplicação local de forma segura na internet sem necessidade de
 st.title("CV Interativo — Ulisses Cuani")
 
 st.subheader(
-"Assistente de IA que responde perguntas sobre o currículo de Ulisses utilizando RAG com Qdrant, embeddings e LLM."
+"Assistente de IA que responde perguntas sobre o currículo de Ulisses."
 )
 
 # ==============================

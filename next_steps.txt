@@ -1,4 +1,2 @@
 Testar colocar outro banco vetorial; 
 Ajustar melhor o prompt;
-Entender como está funcionando o módulo de RAG. Ver o que ele esta considerando de texto em cada arquivo;
-Subir a aplicação para conseguir mandar para outros testarem.
