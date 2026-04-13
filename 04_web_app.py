@@ -12,7 +12,7 @@ warnings.filterwarnings('ignore')
 # CONFIGURAÇÃO DA PÁGINA
 # ==============================
 
-st.set_page_config(page_title="CV - Ulisses", page_icon=":100:", layout="centered")
+st.set_page_config(page_title="CV - Ulisses", page_icon=":brain:", layout="centered")
 
 # ==============================
 # SIDEBAR (TECNOLOGIAS DO PROJETO)
@@ -96,53 +96,45 @@ if submitted and st.session_state.input_question:
 
     question = st.session_state.input_question
 
-    st.write(f'A pergunta foi: "{question}"')
+    st.write(f'Pergunta: "{question}"')
 
     url = "http://127.0.0.1:8000/api"
 
-    payload = json.dumps({"query": question})
+    # payload = json.dumps({"query": question}) # GROQ
+    payload = {"query": question}
+    try:
+        response = requests.post(url, json=payload, timeout=30)
 
-    headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
+        # 🔍 Verifica erro HTTP (ex: 429, 500, etc)
+        if response.status_code != 200:
 
-    response = requests.request("POST", url, headers=headers, data=payload)
+            if response.status_code == 429:
+                st.warning("⚠️ Você atingiu o limite de requisições. Tente novamente em instantes.")
+            
+            elif response.status_code >= 500:
+                st.error("🚨 O servidor ou o modelo de IA está indisponível no momento.")
 
-    answer = json.loads(response.text)["answer"]
+            else:
+                st.error(f"Erro na requisição: {response.status_code}")
+                st.write(response.text)
 
-    rege = re.compile("\[Document\ [0-9]+\]|\[[0-9]+\]")
+        else:
+            data = response.json()
+            answer = data.get("answer", "Sem resposta.")
+            st.markdown(f"**Assistente de IA:** {answer}")
 
-    m = rege.findall(answer)
+    # 🔌 API fora do ar / conexão recusada
+    except requests.exceptions.ConnectionError:
+        st.error("🚨 Não foi possível conectar à API. Verifique se o backend está rodando.")
 
-    num = []
+    # ⏱ Timeout (modelo demorou demais)
+    except requests.exceptions.Timeout:
+        st.warning("⏳ A resposta demorou muito. Tente novamente.")
 
-    for n in m:
-        num = num + [int(s) for s in re.findall(r'\b\d+\b', n)]
+    # ❌ JSON inválido (seu erro atual)
+    except requests.exceptions.JSONDecodeError:
+        st.error("⚠️ A resposta da IA veio em formato inválido. Pode ser instabilidade no modelo.")
 
-    st.markdown(answer)
-
-    documents = json.loads(response.text)['context']
-
-    show_docs = []
-
-    for n in num:
-        for doc in documents:
-            if int(doc['id']) == n:
-                show_docs.append(doc)
-
-    id = 12991345567899999
-
-    for doc in show_docs:
-
-        with st.expander(str(doc['id'])+" - "+doc['path']):
-
-            st.write(doc['content'])
-
-            with open(doc['path'], 'rb') as f:
-
-                st.download_button(
-                    "Download do Arquivo",
-                    f,
-                    file_name = doc['path'].split('/')[-1],
-                    key = id
-                )
-
-                id = id + 1
+    # 🧠 Qualquer outro erro
+    except Exception as e:
+        st.error(f"Erro inesperado: {e}")

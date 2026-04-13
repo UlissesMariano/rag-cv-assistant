@@ -1,2 +1,0 @@
-Testar colocar outro banco vetorial; 
-Ajustar melhor o prompt;

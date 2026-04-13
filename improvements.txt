@@ -1,0 +1,5 @@
+1. Testar colocar outro banco vetorial; 
+
+2. Testar troca de modelos - resposta incorreta: 
+Pergunta: "Em quais empresas e quanto tempo ficou em cada uma?"
+Assistente de IA: Ele trabalhou na Future Secure AI, como Data Scientist (AI Engineer), de dezembro de 2025 a março de 2026, um período de aproximadamente 3 meses. Além disso, não há informações sobre outras empresas nas quais ele tenha trabalhado.

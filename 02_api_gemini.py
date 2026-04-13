@@ -30,6 +30,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 
 # Importa a classe Groq do módulo groq
 from groq import Groq
+from google import genai
 
 # Filtra warnings
 import warnings
@@ -65,16 +66,16 @@ hf = HuggingFaceEmbeddings(
 # ==========================================================================
 
 # Define a variável use_groq_api como False
-use_groq_api = False
+use_api = False
 
 # Verifica se a chave da Groq está disponível
-if os.getenv("GROQ_API_KEY"):
+if os.getenv("GEMINI_API_KEY"):
     
     # Cria uma instância Groq com a chave da API
-    client_ai = Groq(api_key = os.getenv("GROQ_API_KEY"))
+    client_ai = genai.Client()
 
     # Define use_groq_api como True
-    use_groq_api = True
+    use_api = True
 
 else:
     # Imprime uma mensagem indicando que não é possível usar um LLM
@@ -127,12 +128,9 @@ async def api(item: Item):
     if qdrant is None:
         return {"context": [], "answer": "Erro: O banco de dados vetorial Qdrant não pôde ser inicializado."}
 
-
     # 4.1 Realiza a busca de similaridade (RETRIEVAL)
-    # ==========================================================================
-    search_result = qdrant.similarity_search(query = query, k = 6)
+    search_result = qdrant.similarity_search(query=query, k=6)
 
-    
     # Inicializa a lista de resultados, contexto e mapeamento
     list_res = []
     context = ""
@@ -142,9 +140,13 @@ async def api(item: Item):
     for i, res in enumerate(search_result):
         context += f"{i}\n{res.page_content}\n\n"
         mappings[i] = res.metadata.get("path")
-        list_res.append({"id": i, "path": res.metadata.get("path"), "content": res.page_content})
+        list_res.append({
+            "id": i,
+            "path": res.metadata.get("path"),
+            "content": res.page_content
+        })
 
-    # Define a mensagem de sistema
+    # Define a mensagem de sistema (NÃO ALTERADO)
     rolemsg = {"role": "system",
                "content": """               
 ## PAPEL:
@@ -152,12 +154,10 @@ async def api(item: Item):
 Você é um assistente de IA que representa o Ulisses (não é ele). 
 Seu Papel é ser responder de forma precisa e transparente tudo que o entrevistador perguntar sobre as qualificações e conhecimentos do Ulisses.
 
-
 ## OBJETIVO:
 ---
 Isso é uma conversa, então procure responder o mais humano possível, e de forma simples. Responda aquilo que lhe foi perguntado somente, e é claro, somente sobre o tema das qualificações do currículo do Ulisses, experiências acadêmicas, conhecimentos, cursos, etc. 
 Você deve manter o foco da conversa sempre. 
-
 
 ## REGRAS IMPORTANTES:
 ---
@@ -177,7 +177,6 @@ resposta: Olá, tudo bem? em que posso te ajudar hoje?
 pergunta: qual o clima em São Paulo hoje? 
 resposta: Olá, tudo bem? Sinto muito mas não consigo te ajudar com esse tipo de informação... Caso queira conversar sobre o Ulisses, como o currículo, experiências profissionais, pessoais, ou algo assim, ficarei feliz em ajudar. 
 
-
 ## EXEMPLOS DE RESPOSTAS (DENTRO DO ESCOPO):
 ---
 pergunta: O Ulisses é formado em que? 
@@ -186,31 +185,32 @@ resposta: Ele se formou em Estatística no ano de 2021 pela FMU e possui uma pó
 pergunta: ele conhece sobre AWS? 
 resposta: Nos documentos fornecidos aparece uma menção a conhecimentos com a AWS, mas como não tenho tanto descritivo da AWS nos documentos, seu conhecimento atual está no nível básico, tendo somente algum convívio com a plataforma."""}
 
-    
-    # Define as mensagens
-    messages = [rolemsg, {"role": "user", "content": f"Documents:\n{context}\n\nQuestion: {query}"}]
-    
-    # Verifica se a API da Groq está sendo usada
-    if use_groq_api:
+    # 🔥 AJUSTE PARA GEMINI (transforma em prompt único)
+    full_prompt = f"""{rolemsg["content"]}
 
-        # Cria a instância do LLM usando a API da Groq
-        resposta = client_ai.chat.completions.create(model = "llama-3.3-70b-versatile", # openai/gpt-oss-120b
-                                                     messages = messages,
-                                                     temperature = 0.3,
-                                                     top_p = 1,
-                                                     max_tokens = 1024,
-                                                     stream = False)
-        
-        # 4.3 Obtém a resposta do LLM
-        # ==========================================================================
-        response = resposta.choices[0].message.content
-    
+Documents:
+{context}
+
+Question: {query}
+"""
+
+    if use_api:
+
+        resposta = client_ai.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=full_prompt,
+            config={
+                "temperature": 0.3,
+                "top_p": 1,
+                "max_output_tokens": 1024
+            }
+        )
+
+        response = resposta.text
+
     else:
-
-        # Imprime uma mensagem indicando que não é possível usar um LLM
         print("Não é possível usar um LLM.")
-    
+        response = "Erro: LLM não disponível."
+
     return {"context": list_res, "answer": response}
-
-
 

@@ -17,6 +17,7 @@ htmlcov/
 
 # Local documents and data (as requested)
 documents/
+_documents_rag/
 data/
 
 # IDE and editor settings
